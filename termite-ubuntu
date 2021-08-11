@@ -1,0 +1,161 @@
+#!/bin/bash
+
+BUILD_DIR="$(pwd)"
+
+DATE=$(date +"%d-%m-%Y")
+TIME=$(date +"%T")
+
+LOG_FILE="$(pwd)/log/$DATE-$TIME-termite-ubuntu.log"
+
+# Abort if error
+if [[ $(set -e) ]]; then
+  message info "Aborted due to an error"
+  exit 1
+fi
+
+function message() {
+    # $1 = type , $2 = message
+    # Message types
+    # info
+    # warning
+    # error
+    if [[ -z "${1}" ]] || [[ -z "${2}" ]]; then
+      return
+    fi
+
+    local RED="\e[31m"
+    local GREEN="\e[32m"
+    local YELLOW="\e[33m"
+    local RESET="\e[0m"
+    local MESSAGE_TYPE=""
+    local MESSAGE=""
+    MESSAGE_TYPE="${1}"
+    MESSAGE="${2}"
+
+    case ${MESSAGE_TYPE} in
+      info) echo -e "  [${GREEN}+${RESET}] INFO: ${MESSAGE}";;
+      quest) echo -en "  [${GREEN}?${RESET}] INPUT: ${MESSAGE}";;
+      warn) echo -e " [${YELLOW}*${RESET}] WARNING: ${MESSAGE}";;
+      error) echo -e "  [${RED}!${RESET}] ERROR: ${MESSAGE}";;
+      *) echo -e "  [?] UNKNOWN: ${MESSAGE}";;
+    esac
+}
+
+if [[ $1 == "--h" || $1 == "--help" ]]; then
+  message info 'Usage:'
+    echo '      ./termite-ubuntu [FLAG]'
+    echo '      Flags:'
+    echo '          --install    (or --I)               Installs Termite.'
+    echo '          --uninstall  (or --U)               Uninstalls Termite.'
+    exit 1
+fi
+
+# Check if OS is supported.
+OS_ID=$(lsb_release --id --short)
+
+if [[ "${OS_ID}" == "Ubuntu" ]]; then
+  message info "${OS_ID} detected, wich is supported."
+else
+  message error "${OS_ID} detected, which is not supported."
+  exit 1
+fi
+
+case $1 in
+
+  --I| --install)
+    touch $LOG_FILE
+    # Check if Termite is already installed.
+    if [[ $(which termite) ]]; then
+      message info "Termite already installed."
+      exit 1
+    fi
+
+    message info "Installing dependencies..."
+    sudo apt -y install git g++ libgtk-3-dev gtk-doc-tools gnutls-bin valac libtool intltool libpcre2-dev libglib3.0-cil-dev libgnutls28-dev libgirepository1.0-dev libxml2-utils gperf &> /dev/null
+
+    message info "Cloning vte-ng..."
+    git clone -q -b 0.56.2.a https://github.com/thestinger/vte-ng.git
+
+    message info "Cloning Termite..."
+    git clone -q --recursive -b v15 https://github.com/thestinger/termite.git
+
+    message info "Installing vte-ng..."
+    cd $BUILD_DIR/vte-ng
+
+    NOCONFIGURE=1 ./autogen.sh
+      ./configure \
+      --prefix=$BUILD_DIR/vte-static \
+      --enable-static \
+      --disable-shared \
+      --enable-vala=no \
+      --disable-gtk-doc \
+      --disable-introspection
+
+    make
+    make install
+    make install-pkgconfigDATA
+
+    message info "Installing Termite..."
+    cd $BUILD_DIR/termite
+
+    export PKG_CONFIG_PATH="$BUILD_DIR/vte-static/lib/pkgconfig"
+    make
+    sudo make install
+
+    sudo cat << EOF > termite.wrapper
+#!/bin/bash
+exec /usr/local/bin/termite "\$@"
+EOF
+
+    sudo chmod +x termite.wrapper
+
+    sudo install -d /usr/local/bin/
+    sudo install -m 755 termite.wrapper /usr/local/bin/
+
+    sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/termite.wrapper 60
+
+    sudo install -d /usr/local/etc/profile.d/
+    sudo install -m 644 "$BUILD_DIR/vte-static/etc/profile.d/vte.sh" /usr/local/etc/profile.d/
+
+    sudo install -d /usr/share/terminfo/x
+    sudo ln -s /usr/local/share/terminfo/x/xterm-termite /usr/share/terminfo/x/xterm-termite
+
+    cd $BUILD_DIR
+    rm -rf $BUILD_DIR/vte-ng $BUILD_DIR/termite $BUILD_DIR/vte-static
+    message info "Log-file available at $LOG_FILE"
+    ;;
+
+  --U| --uninstall)
+    touch $LOG_FILE
+    message warn "you are about to uninstall Termite."
+    message quest "Are you sure you want to continue? [y/n] "
+    read -p " " CONTINUE
+
+    if [[ $CONTINUE == "y" || $CONTINUE == "Y" ]]; then
+      sudo update-alternatives --remove x-terminal-emulator /usr/local/bin/termite.wrapper
+
+      sudo rm -f /usr/local/bin/termite.wrapper
+      sudo rm -f /usr/local/etc/profile.d/vte.sh
+      sudo rmdir --ignore-fail-on-non-empty /usr/local/etc/profile.d
+      sudo rm -f /usr/share/terminfo/x/xterm-termite
+      sudo rmdir --ignore-fail-on-non-empty /usr/share/terminfo/x
+
+      sudo rm -f /usr/local/bin/termite
+      sudo rm -f /etc/xdg/termite/config
+      sudo rmdir --ignore-fail-on-non-empty /etc/xdg/termite
+      sudo rm -f /usr/local/share/applications/termite.desktop
+      sudo rm -f /usr/local/share/man/man1/termite.1
+      sudo rm -f /usr/local/share/man/man5/termite.config.5
+      sudo rm -f /usr/local/share/terminfo/x/xterm-termite
+      sudo rmdir --ignore-fail-on-non-empty /usr/local/share/terminfo/x
+
+      message info "Log-file available at $LOG_FILE"
+    else
+      exit 1
+    fi
+    ;;
+  *)
+    message error "Unknown option."
+    ;;
+
+esac | tee -a "$LOG_FILE"
