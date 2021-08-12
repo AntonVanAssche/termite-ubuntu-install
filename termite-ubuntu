@@ -53,10 +53,10 @@ if [[ $1 == "--h" || $1 == "--help" ]]; then
     exit 1
 fi
 
-# Check if OS is supported.
+# Checks if OS is supported by detecting apt.
 OS_ID=$(lsb_release --id --short)
 
-if [[ "${OS_ID}" == "Ubuntu" ]]; then
+if [[ $(which apt) ]]; then
   message info "${OS_ID} detected, wich is supported."
 else
   message error "${OS_ID} detected, which is not supported."
