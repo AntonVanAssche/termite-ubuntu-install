@@ -7,6 +7,9 @@ TIME=$(date +"%T")
 
 LOG_FILE="$(pwd)/log/$DATE-$TIME-termite-ubuntu.log"
 
+# Create log directory if not exists.
+mkdir -p $BUILD_DIR/log/
+
 # Abort if error
 if [[ $(set -e) ]]; then
   message info "Aborted due to an error"
