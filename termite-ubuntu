@@ -38,7 +38,7 @@ function message() {
     case ${MESSAGE_TYPE} in
       info) echo -e "  [${GREEN}+${RESET}] INFO: ${MESSAGE}";;
       quest) echo -en "  [${GREEN}?${RESET}] INPUT: ${MESSAGE}";;
-      warn) echo -e " [${YELLOW}*${RESET}] WARNING: ${MESSAGE}";;
+      warn) echo -e "  [${YELLOW}*${RESET}] WARNING: ${MESSAGE}";;
       error) echo -e "  [${RED}!${RESET}] ERROR: ${MESSAGE}";;
       *) echo -e "  [?] UNKNOWN: ${MESSAGE}";;
     esac
@@ -131,7 +131,7 @@ EOF
   --U| --uninstall)
     touch $LOG_FILE
     message warn "you are about to uninstall Termite."
-    message quest "Are you sure you want to continue? [y/n] "
+    message quest "Are you sure you want to continue? [y/n]"
     read -p " " CONTINUE
 
     if [[ $CONTINUE == "y" || $CONTINUE == "Y" ]]; then
