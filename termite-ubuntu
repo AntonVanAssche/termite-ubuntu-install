@@ -16,6 +16,25 @@ if [[ $(set -e) ]]; then
   exit 1
 fi
 
+function ask_sudo() {
+
+    # Ask for the administrator password upfront.
+
+    sudo -v &> /dev/null
+
+    # Update existing `sudo` time stamp
+    # until this script has finished.
+    #
+    # https://gist.github.com/cowboy/3118588
+
+    while true; do
+        sudo -n true
+        sleep 60
+        kill -0 "$$" || exit
+    done &> /dev/null &
+
+}
+
 function message() {
     # $1 = type , $2 = message
     # Message types
@@ -72,6 +91,8 @@ case $1 in
       message info "Termite already installed."
       exit 1
     fi
+
+    ask_sudo
 
     message info "Installing dependencies..."
     sudo apt -y install git g++ libgtk-3-dev gtk-doc-tools gnutls-bin valac libtool intltool libpcre2-dev libglib3.0-cil-dev libgnutls28-dev libgirepository1.0-dev libxml2-utils gperf &> /dev/null
@@ -135,6 +156,8 @@ EOF
     read -p " " CONTINUE
 
     if [[ $CONTINUE == "y" || $CONTINUE == "Y" ]]; then
+      ask_sudo
+
       sudo update-alternatives --remove x-terminal-emulator /usr/local/bin/termite.wrapper
 
       sudo rm -f /usr/local/bin/termite.wrapper
