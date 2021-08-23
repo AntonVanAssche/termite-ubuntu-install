@@ -95,7 +95,7 @@ case $1 in
     ask_sudo
 
     message info "Installing dependencies..."
-    sudo apt -y install git g++ libgtk-3-dev gtk-doc-tools gnutls-bin valac libtool intltool libpcre2-dev libglib3.0-cil-dev libgnutls28-dev libgirepository1.0-dev libxml2-utils gperf &> /dev/null
+    sudo apt -y install git g++ libgtk-3-dev gtk-doc-tools gnutls-bin valac libtool intltool libpcre2-dev libglib3.0-cil-dev libgnutls28-dev libgirepository1.0-dev libxml2-utils gperf
 
     message info "Cloning vte-ng..."
     git clone -q -b 0.56.2.a https://github.com/thestinger/vte-ng.git
