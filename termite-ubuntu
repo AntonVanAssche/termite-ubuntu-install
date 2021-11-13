@@ -185,4 +185,4 @@ EOF
     message error "Unknown option."
     ;;
 
-esac | tee -a "$LOG_FILE"
+esac 2>&1 | tee -a "$logFile"
