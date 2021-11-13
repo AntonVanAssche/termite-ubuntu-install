@@ -1,14 +1,14 @@
 #!/bin/bash
 
-BUILD_DIR="$(pwd)"
+buildDir="$(pwd)"
 
-DATE=$(date +"%d-%m-%Y")
-TIME=$(date +"%T")
+date=$(date +"%d-%m-%Y")
+time=$(date +"%T")
 
-LOG_FILE="$(pwd)/log/$DATE-$TIME-termite-ubuntu.log"
+logFile="$buildDir/log/$date-$time-termite-ubuntu.log"
 
 # Create log directory if not exists.
-mkdir -p $BUILD_DIR/log/
+mkdir -p $buildDir/log/
 
 # Abort if error
 set -e
@@ -83,7 +83,8 @@ case $1 in
     ;;
 
   --I| --install)
-    touch $LOG_FILE
+    touch $logFile
+
     # Check if Termite is already installed.
     if ;command -v termite &> /dev/null; then
       message info "Termite already installed."
@@ -102,11 +103,11 @@ case $1 in
     git clone -q --recursive -b v15 https://github.com/thestinger/termite.git
 
     message info "Installing vte-ng..."
-    cd $BUILD_DIR/vte-ng
+    cd $buildDir/vte-ng
 
     NOCONFIGURE=1 ./autogen.sh
       ./configure \
-      --prefix=$BUILD_DIR/vte-static \
+      --prefix=$buildDir/vte-static \
       --enable-static \
       --disable-shared \
       --enable-vala=no \
@@ -118,9 +119,9 @@ case $1 in
     make install-pkgconfigDATA
 
     message info "Installing Termite..."
-    cd $BUILD_DIR/termite
+    cd $buildDir/termite
 
-    export PKG_CONFIG_PATH="$BUILD_DIR/vte-static/lib/pkgconfig"
+    export PKG_CONFIG_PATH="$buildDir/vte-static/lib/pkgconfig"
     make
     sudo make install
 
@@ -137,23 +138,24 @@ EOF
     sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/local/bin/termite.wrapper 60
 
     sudo install -d /usr/local/etc/profile.d/
-    sudo install -m 644 "$BUILD_DIR/vte-static/etc/profile.d/vte.sh" /usr/local/etc/profile.d/
+    sudo install -m 644 "$buildDir/vte-static/etc/profile.d/vte.sh" /usr/local/etc/profile.d/
 
     sudo install -d /usr/share/terminfo/x
     sudo ln -s /usr/local/share/terminfo/x/xterm-termite /usr/share/terminfo/x/xterm-termite
 
-    cd $BUILD_DIR
-    rm -rf $BUILD_DIR/vte-ng $BUILD_DIR/termite $BUILD_DIR/vte-static
-    message info "Log-file available at $LOG_FILE"
+    cd $buildDir
+    rm -rf $buildDir/{vte-ng,termite,vte-static}
+    message info "Log-file available at $logFile"
     ;;
 
   --U| --uninstall)
-    touch $LOG_FILE
-    message warn "you are about to uninstall Termite."
-    message quest "Are you sure you want to continue? [y/n]"
-    read -p " " CONTINUE
+    touch $logFile
 
-    if [[ $CONTINUE == "y" || $CONTINUE == "Y" ]]; then
+    message warn "you are about to uninstall Termite."
+    message quest "Are you sure you want to continue? [y/N]"
+    read -p " " continue
+
+    if [[ $continue == "y" || $continue == "Y" ]]; then
       ask_sudo
 
       sudo update-alternatives --remove x-terminal-emulator /usr/local/bin/termite.wrapper
@@ -173,12 +175,13 @@ EOF
       sudo rm -f /usr/local/share/terminfo/x/xterm-termite
       sudo rmdir --ignore-fail-on-non-empty /usr/local/share/terminfo/x
 
-      message info "Log-file available at $LOG_FILE"
+      message info "Log-file available at $logFile"
     else
       exit 1
     fi
     ;;
-  *)
+
+    *)
     message error "Unknown option."
     ;;
 
