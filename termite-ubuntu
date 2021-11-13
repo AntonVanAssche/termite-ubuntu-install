@@ -60,15 +60,10 @@ function message() {
     esac
 }
 
+<<<<<<< Updated upstream
 if [[ $1 == "--h" || $1 == "--help" ]]; then
   message info 'Usage:'
-    echo '      ./termite-ubuntu [FLAG]'
-    echo '      Flags:'
-    echo '          --install    (or --I)               Installs Termite.'
-    echo '          --uninstall  (or --U)               Uninstalls Termite.'
-    exit 1
-fi
-
+=======
 # Checks if OS is supported by detecting apt.
 
 if ! command -v apt &> /dev/null; then
@@ -77,6 +72,15 @@ if ! command -v apt &> /dev/null; then
 fi
 
 case $1 in
+  --h| --help)
+    message info 'Usage:'
+>>>>>>> Stashed changes
+    echo '      ./termite-ubuntu [FLAG]'
+    echo '      Flags:'
+    echo '          --install    (or --I)               Installs Termite.'
+    echo '          --uninstall  (or --U)               Uninstalls Termite.'
+    exit 1
+    ;;
 
   --I| --install)
     touch $LOG_FILE
