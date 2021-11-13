@@ -70,12 +70,9 @@ if [[ $1 == "--h" || $1 == "--help" ]]; then
 fi
 
 # Checks if OS is supported by detecting apt.
-OS_ID=$(lsb_release --id --short)
 
-if [[ $(which apt) ]]; then
-  message info "${OS_ID} detected, wich is supported."
-else
-  message error "${OS_ID} detected, which is not supported."
+if ! command -v apt &> /dev/null; then
+  message error "Your system is not supported."
   exit 1
 fi
 
@@ -84,7 +81,7 @@ case $1 in
   --I| --install)
     touch $LOG_FILE
     # Check if Termite is already installed.
-    if [[ $(which termite) ]]; then
+    if ;command -v termite &> /dev/null; then
       message info "Termite already installed."
       exit 1
     fi
