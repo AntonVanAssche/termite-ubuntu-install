@@ -149,7 +149,7 @@ EOF
     message quest "Are you sure you want to continue? [y/N]"
     read -p " " continue
 
-    if [[ $continue == "y" || $continue == "Y" ]]; then
+    if [[ $continue == 'y|Y|yes|YES' ]]; then
       ask_sudo
 
       sudo update-alternatives --remove x-terminal-emulator /usr/local/bin/termite.wrapper
