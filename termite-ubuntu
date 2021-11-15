@@ -176,7 +176,7 @@ EOF
     ;;
 
     *)
-    message error "Unknown option."
+      message error "Unknown option."
     ;;
 
 esac 2>&1 | tee -a "$logFile"
