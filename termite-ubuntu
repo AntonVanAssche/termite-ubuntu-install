@@ -80,7 +80,7 @@ case $1 in
     touch $logFile
 
     # Check if Termite is already installed.
-    if ;command -v termite &> /dev/null; then
+    if command -v termite &> /dev/null; then
       message info "Termite already installed."
       exit 1
     fi
