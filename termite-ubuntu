@@ -60,12 +60,7 @@ function message() {
     esac
 }
 
-<<<<<<< Updated upstream
-if [[ $1 == "--h" || $1 == "--help" ]]; then
-  message info 'Usage:'
-=======
 # Checks if OS is supported by detecting apt.
-
 if ! command -v apt &> /dev/null; then
   message error "Your system is not supported."
   exit 1
@@ -74,7 +69,6 @@ fi
 case $1 in
   --h| --help)
     message info 'Usage:'
->>>>>>> Stashed changes
     echo '      ./termite-ubuntu [FLAG]'
     echo '      Flags:'
     echo '          --install    (or --I)               Installs Termite.'
