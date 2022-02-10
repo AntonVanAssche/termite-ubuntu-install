@@ -12,7 +12,7 @@ Tested on Ubuntu 21.04.
 
 To install Termite:
 ```bash
-$ git clone https://github.com/TuX-sudo/termite-ubuntu-install.git
+$ git clone https://github.com/AntonVanAssche/termite-ubuntu-install.git
 $ cd termite-ubuntu-install
 $ ./termite-ubuntu --install
 ```
